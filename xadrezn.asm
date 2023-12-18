@@ -4,10 +4,10 @@
 ##	$10-->
 ##	$11-->
 ##	$12-->
-##	$13-->
+##	$13--> 
 ##	$14-->
 ##	$15-->
-##	$16-->
+##	$16--> Quem inimigo
 ##	$17--> Quem!
 ##	$18--> Cores lado direito
 ##	$19--> Cores lado esquerdo
@@ -173,7 +173,7 @@ main:	lui $24 0x1009
 	
 	
 	### PEÇAS LADO ESQUERDO
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	addi $4 $0 24604
 	jal rainha
 	addi $4 $0 16412
@@ -279,7 +279,7 @@ deNovo:	beq $2 $0 quemTaAi
 quemTaAi:	lw $17 0($24)                   ## $17 contém o número representando a peça
 		sw $0 0($24)
 		beq $17 1 piaoAqui
-	
+		j fimJ
 
 
 
@@ -435,13 +435,18 @@ ponto:	lui $25 0x1001
 	sw $19 0($25)
 	addi $25 $25 508
 	sw $19 0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31
 
 
 	
 proximoPassoPiao:li $2 5
 		syscall
+		mul $7 $2 4
+		add $24 $24 $7
+		lw $16 0($24)
+		#bgt $16 0 apagaQuemVaiMatar
+		sw $17 0($24)
 		jal apagaQuadrado
 		addi $4 $4 2652
 		jal apagaPonto
@@ -461,9 +466,7 @@ proximoPassoPiao:li $2 5
 		
 		
 
-umaCasa:lui $24 0x1009
-	mul $24 $7 4
-	addi $4 $4 64
+umaCasa:addi $4 $4 64
 	jal piao 
 	j fimJ
 	
@@ -512,10 +515,22 @@ again4:		beq $10 2 fimQuadrado
 		addi $10 $10 -1
 		j again4
 fimQuadrado:	addi $10 $0 16
-		addi $19 $0 0x00d267ab
+		addi $19 $0 0x00ffaa00
 		addi $31 $13 0
 		jr $ra
 	
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -763,7 +778,7 @@ bispo:	lui $25 0x1001
 	sw $19 0($25)
 	addi $25 $25 4
 	sw $19 0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31
 	
 ##################	
@@ -897,7 +912,7 @@ rainha:	lui $25 0x1001
 	sw $19 0($25)
 	addi $25 $25 4
 	sw $19 0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31	
 	
 ###################
@@ -1045,7 +1060,7 @@ rei:	lui $25,0x1001
 	sw $19,0($25)
 	addi $25, $25 4
 	sw $19,0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31
 	
 ########################	
@@ -1276,7 +1291,7 @@ cavalo:	lui $25,0x1001
 	sw $19,0($25)
 	addi $25,$25,4
 	sw $19,0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31
 	
 #####################
@@ -1452,7 +1467,7 @@ torre:	lui $25,0x1001
 	sw $19,0($25)
 	addi $25,$25,4
 	sw $19,0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $ra
 
 
@@ -1550,7 +1565,7 @@ piao:	lui $25,0x1001
 	sw $19,0($25)
 	addi $25,$25,4
 	sw $19,0($25)
-	addi $19 $0 0x00d267ab
+	addi $19 $0 0x00ffaa00
 	jr $31
 	
 	
