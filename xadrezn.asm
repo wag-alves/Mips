@@ -186,9 +186,9 @@ main:	lui $24 0x1009
 	jal cavalo
 	addi $4,$0,46616
 	jal cavalo
-	addi $4,$0,524
+	addi $4,$0,1036
 	jal torre
-	addi $4,$0,54284
+	addi $4,$0,54796
 	jal torre
 	addi $4,$0,1112
 	jal piao
@@ -226,9 +226,9 @@ main:	lui $24 0x1009
 	jal piao2
 	addi $4,$0 55192
 	jal piao2
-	addi $4,$0,972
+	addi $4,$0,1484
 	jal torre2
-	addi $4,$0,54732
+	addi $4,$0,55244
 	jal torre2	
 	addi $4 $0 39900
 	jal bispo2
@@ -243,6 +243,7 @@ main:	lui $24 0x1009
 	addi $4 $0 32216
 	jal rei2
 
+	
 
 
 
@@ -271,8 +272,12 @@ deNovo:	beq $2 $0 quemTaAi
 	
 	
 
+
+
+
 	
 quemTaAi:	lw $17 0($24)                   ## $17 contém o número representando a peça
+		sw $0 0($24)
 		beq $17 1 piaoAqui
 	
 
@@ -283,187 +288,234 @@ piaoAqui:	addi $4 $0 0
 		addi $10 $0 8
 		addi $21 $21 -1
 		beq $21 $0 primeiraCasa
-aquiAgain:	beq $21 0 quadradoP
-aquiOmi:	addi $4 $4 64
-		addi $21 $21 -1
+aquiAgain:	beq $21 0 vaiQuadrado
+		addi $4 $4 64
+aquiOmi:	addi $21 $21 -1
 		addi $10 $10 -1
-		beq $21 -1 proximaCasa
+		beq $21 -1 proximoPassoPiao
 		beq $10 $0 pula
 		j aquiAgain	
 		j fimJ
 	
-	
+vaiQuadrado:	jal quadrado	
+		addi $4 $4 2652
+		jal ponto
+		addi $4 $4 64
+		jal ponto
+		addi $4 $4 -2716
+		j aquiOmi
 	
 	
 primeiraCasa:	addi $4 $0 0
 		jal quadrado
 		j fimJ
 	
-	
-	
-	
-	
 pula:	addi $4 $4 7168
 	addi $10 $0 8
 	j aquiAgain
 	
 	
-
-
-		
-
-quadradoP: 	addi $24 $31 0
-		jal quadrado
-		addi $4 $4 2652
-		jal ponto
-
-		addi $4 $4 64
-		jal ponto
-		j aquiOmi
+	
+	
 	
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
-	
+apagaPonto:	lui $25 0x1001
+		add $25 $25 $4
+		lw $19 65536($25)
 ponto:	lui $25 0x1001
 	add $25 $25 $4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 508
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 500
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 500
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 4
-	sw $16 0($25)
+	sw $19 0($25)
 	addi $25 $25 508
-	sw $16 0($25)
-	
-	
-	
-	
+	sw $19 0($25)
+	addi $19 $0 0x00d267ab
 	jr $31
-	
-
-
-
-
-
 
 
 	
-proximaCasa:	li $2 5
+proximoPassoPiao:li $2 5
 		syscall
-		j tiraCor
-toAqui:		
-		beq $2 1 pulaUmaCasa
-		
-		
-		add $19 $22 $0
-		add $22 $0 $18
-		addi $4 $0 1112
-		jal sleep
-		jal piao
-		add $22 $19 $0
-		addi $4 $0 1240
-		jal piao
-		j fimJ
-	
-	
-	
-	
-	
-	
-	
-pulaUmaCasa:	
-		add $19 $22 $0
-		add $22 $0 $18
-		addi $4 $0 1112
-		jal sleep
-		jal piao
-		add $22 $19 $0
-		addi $4 $0 1176
+		jal apagaQuadrado
+		addi $4 $4 2652
+		jal apagaPonto
+		addi $4 $4 64
+		jal apagaPonto
+		addi $4 $4 -2716
+		addi $4 $4 1048
+		jal apagaPiao
+		addi $21 $20 1
+		beq $2 1 umaCasa
+		addi $21 $20 2
+		addi $4 $4 128
 		jal piao
 		j fimJ
-	
-	
-	
-	
-	
-	
-	
-	
-tiraCor:lui $25 0x1001	
-	addi $16 $18 0
-	addi $8 $4 0
-	addi $4 $0 64
-	jal quadrado
-	addi $4 $4 2652
-	addi $16 $17 0
-	jal ponto
+		
+		
+		
+		
+
+umaCasa:lui $24 0x1009
+	mul $24 $7 4
 	addi $4 $4 64
-	addi $16 $18 0
-	jal ponto
-	addi $4 $8 0
-	j toAqui
-	 
+	jal piao 
+	j fimJ
+	
+
+
+	
+	
+	
+	
+	
 
 
 
 
+ ### USO $10 $13
 
-
-
-
-quadrado:	addi $23 $31 0
+apagaQuadrado:	lui $25 0x1001
+		add $25 $25 $4
+		lw $19 65536($25)
+quadrado:	addi $13 $31 0
 		lui $25 0x1001
 		add $25 $25 $4
-		lw $19 0($25)	
-		addi $11 $19 0
 		addi $10 $0 16
 again:		beq $10 1 fimLinha
-		sw $16 0($25)
+		sw $19 0($25)
 		addi $25 $25 4
 		addi $10 $10 -1
 		j again
-fimLinha:	sw $16 0($25)
+fimLinha:	sw $19 0($25)
 		addi $10 $0 16
 again2:		beq $10 2 fimColuna
 		addi $25 $25 512
-		sw $16 0($25)
+		sw $19 0($25)
 		addi $10 $10 -1
 		j again2
 fimColuna:	addi $10 $0 16
 again3:		beq $10 1 fimLinha2
 		addi $25 $25 -4
-		sw $16 0($25)
+		sw $19 0($25)
 		addi $10 $10 -1
 		j again3
 fimLinha2:	addi $10 $0 16
 again4:		beq $10 2 fimQuadrado
 		addi $25 $25 -512
-		sw $16 0($25)
+		sw $19 0($25)
 		addi $10 $10 -1
 		j again4
 fimQuadrado:	addi $10 $0 16
-		addi $31 $23 0
+		addi $19 $0 0x00d267ab
+		addi $31 $13 0
 		jr $ra
 	
-
 
 
 
