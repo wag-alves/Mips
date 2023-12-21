@@ -258,10 +258,15 @@ main:	lui $24 0x1009
 
 
 
+
+
+
+
 while:	bne $0 $0 fimJ
+jogador2:
 	li $2 5
 	syscall
-	add $20 $2 $0
+	add $20 $2 $0                   ###Original
 	add $21 $20 $0
 	addi $2 $2 -1
 	lui $24 0x1009
@@ -279,6 +284,7 @@ deNovo:	beq $2 $0 quemTaAi
 quemTaAi:	lw $17 0($24)                   ## $17 contém o número representando a peça
 		sw $0 0($24)
 		beq $17 1 piaoAqui
+		beq $17 7 piaoRoxoAqui
 		j fimJ
 
 
@@ -298,6 +304,7 @@ aquiOmi:	addi $21 $21 -1
 		j fimJ
 	
 vaiQuadrado:	jal quadrado	
+#######################################################################
 		addi $4 $4 2652
 		jal ponto
 		addi $4 $4 64
@@ -317,8 +324,166 @@ pula:	addi $4 $4 7168
 	
 	
 	
+
+
+
+
+
+	
 	
 
+piaoRoxoAqui:	addi $4 $0 0
+		addi $10 $0 8
+		addi $21 $21 -1
+		beq $21 $0 primeiraCasaRoxo
+aquiAgainRoxo:	beq $21 0 vaiQuadradoRoxo
+		addi $4 $4 64
+aquiOmiRoxo:	addi $21 $21 -1
+		addi $10 $10 -1
+		beq $21 -1 proximoPassoPiaoRoxo
+		beq $10 $0 pulaRoxo
+		j aquiAgainRoxo	
+		j fimJ
+	
+vaiQuadradoRoxo:	jal quadradoRoxo	
+		addi $4 $4 2524
+		jal pontoRoxo
+		addi $4 $4 -64
+		jal pontoRoxo
+		addi $4 $4 -2716
+		j aquiOmiRoxo
+	
+	
+primeiraCasaRoxo:	addi $4 $0 0
+		jal quadradoRoxo
+		j fimJ
+	
+pulaRoxo:	addi $4 $4 7168
+	addi $10 $0 8
+	j aquiAgainRoxo
+	
+	
+	
+	
+	
+	
+	
+		
+apagaPontoRoxo:	lui $25 0x1001
+		add $25 $25 $4
+		lw $18 65536($25)
+pontoRoxo:	lui $25 0x1001
+	add $25 $25 $4
+	sw $18 0($25)
+	addi $25 $25 508
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 500
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 500
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 4
+	sw $18 0($25)
+	addi $25 $25 508
+	sw $18 0($25)
+	addi $18 $0 0x00392975
+	jr $31
+
+
+	
+proximoPassoPiaoRoxo:li $2 5
+		syscall                ######Movendo a peça na matriz
+		mul $7 $2 4
+		mul $7 $7 -1
+		add $24 $24 $7
+		lw $16 0($24)
+		#bgt $16 0 apagaQuemVaiMatar
+		sw $17 0($24)
+		addi $4 $4 256
+		jal apagaQuadradoRoxo
+		addi $4 $4 2460
+		jal apagaPontoRoxo
+		addi $4 $4 64
+		jal apagaPontoRoxo
+		addi $4 $4 -1476
+		jal apagaPiao2
+		addi $21 $20 1
+		beq $2 1 umaCasaRoxo
+		addi $21 $20 2
+		addi $4 $4 -128
+		jal piao2
+		j jogador2
+		
+		
+		
+		
+
+umaCasaRoxo:addi $4 $4 -64
+	jal piao2
+	j jogador2
+	
+
+
+	
+	
+	
+	
+	
+
+
+
+
+ ### USO $10 $13
+
+apagaQuadradoRoxo:	lui $25 0x1001
+		add $25 $25 $4
+		lw $18 65536($25)
+quadradoRoxo:	addi $13 $31 0
+		lui $25 0x1001
+		add $25 $25 $4
+		addi $10 $0 16
+againRoxo:		beq $10 1 fimLinhaRoxo
+		sw $18 0($25)
+		addi $25 $25 4
+		addi $10 $10 -1
+		j againRoxo
+fimLinhaRoxo:	sw $18 0($25)
+		addi $10 $0 16
+again2Roxo:		beq $10 2 fimColunaRoxo
+		addi $25 $25 512
+		sw $18 0($25)
+		addi $10 $10 -1
+		j again2Roxo
+fimColunaRoxo:	addi $10 $0 16
+again3Roxo:		beq $10 1 fimLinha2Roxo
+		addi $25 $25 -4
+		sw $18 0($25)
+		addi $10 $10 -1
+		j again3Roxo
+fimLinha2Roxo:	addi $10 $0 16
+again4Roxo:		beq $10 2 fimQuadradoRoxo
+		addi $25 $25 -512
+		sw $18 0($25)
+		addi $10 $10 -1
+		j again4Roxo
+fimQuadradoRoxo:	addi $10 $0 16
+		addi $18 $0 0x00392975
+		addi $31 $13 0
+		jr $ra
+	
 
 
 
@@ -443,6 +608,7 @@ ponto:	lui $25 0x1001
 proximoPassoPiao:li $2 5
 		syscall
 		mul $7 $2 4
+		
 		add $24 $24 $7
 		lw $16 0($24)
 		#bgt $16 0 apagaQuemVaiMatar
@@ -460,7 +626,7 @@ proximoPassoPiao:li $2 5
 		addi $21 $20 2
 		addi $4 $4 128
 		jal piao
-		j fimJ
+		j jogador2
 		
 		
 		
@@ -468,7 +634,7 @@ proximoPassoPiao:li $2 5
 
 umaCasa:addi $4 $4 64
 	jal piao 
-	j fimJ
+	j jogador2
 	
 
 
@@ -519,9 +685,6 @@ fimQuadrado:	addi $10 $0 16
 		addi $31 $13 0
 		jr $ra
 	
-
-
-
 
 
 
