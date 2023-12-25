@@ -1,10 +1,10 @@
-
+##      $07--> To sujando
 ##	$08--> Timer sleep
 ##	$09-->
-##	$10-->
+##	$10-->###
 ##	$11-->
 ##	$12-->
-##	$13--> 
+##	$13-->###
 ##	$14-->
 ##	$15-->
 ##	$16--> Quem inimigo
@@ -131,7 +131,7 @@ main:	lui $24 0x1009
 	sw $13 252($24)
 
 
-
+	
 	lui $25 0x1001
 	addi $18,$0,0x00E3E3E3       ### verde escuro
 	addi $19,$0,0x00f0f0f0       ### cinza claro
@@ -242,8 +242,9 @@ main:	lui $24 0x1009
 	jal cavalo2
 	addi $4 $0 32216
 	jal rei2
-
-	
+	addi $4 $0 62120
+	jal jogador1
+	addi $6 $0 2
 
 
 
@@ -264,9 +265,12 @@ main:	lui $24 0x1009
 
 while:	bne $0 $0 fimJ
 jogador2:
+	beq $6 0 play1
+	beq $6 1 play2
+voltei:
 	li $2 5
 	syscall
-	add $20 $2 $0                   ###Original
+	add $20 $2 $0                   ###Original  poisicao
 	add $21 $20 $0
 	addi $2 $2 -1
 	lui $24 0x1009
@@ -290,7 +294,8 @@ quemTaAi:	lw $17 0($24)                   ## $17 contém o número representando
 
 
 
-piaoAqui:	addi $4 $0 0
+piaoAqui:	addi $6 $0 0
+		addi $4 $0 0
 		addi $10 $0 8
 		addi $21 $21 -1
 		beq $21 $0 primeiraCasa
@@ -305,11 +310,22 @@ aquiOmi:	addi $21 $21 -1
 	
 vaiQuadrado:	jal quadrado	
 #######################################################################
+		addi $24 $24 4
+		lw $16 0($24)
+		bgt $16 1 ocupado
+		addi $24 $24 -4
+	
+	
 		addi $4 $4 2652
 		jal ponto
-		addi $4 $4 64
-		jal ponto
-		addi $4 $4 -2716
+		beq $20 2 firstTime
+		beq $20 10 firstTime
+		beq $20 18 firstTime
+		beq $20 26 firstTime
+		beq $20 34 firstTime
+		beq $20 42 firstTime
+		beq $20 50 firstTime
+return:		addi $4 $4 -2652
 		j aquiOmi
 	
 	
@@ -323,16 +339,59 @@ pula:	addi $4 $4 7168
 	
 	
 	
+firstTime:
+addi $4 $4 64
+jal ponto
+addi $4 $4 -64
+j return
+	
+
+
+
+
+ocupado:addi $24 $24 32
+	lw $16 0($24)
+	bgt $16 1 kill
+	j jogador2
+	
 	
 
 
 
 
 
+
+kill:	
+	addi $4 $4 7740
+	addi $7 $0 0x00ff7700
+	jal red
+	li $2 5
+	syscall
+	beq $2 90 kill2
+	j jogador2
+
+
+kill2:	addi $4 $4 -6692
+	jal apagaPiao
+	addi $4 $4 -1048
+	jal apagaQuadrado
+	addi $4 $4 7740
+	jal apagaRed
+	addi $4 $4 1052
+	jal piao
+	sw $17 0($24)
+
+	j jogador2
+
+
+
+
+
 	
 	
 
-piaoRoxoAqui:	addi $4 $0 0
+piaoRoxoAqui:	addi $6 $0 1
+		addi $4 $0 0
 		addi $10 $0 8
 		addi $21 $21 -1
 		beq $21 $0 primeiraCasaRoxo
@@ -345,12 +404,19 @@ aquiOmiRoxo:	addi $21 $21 -1
 		j aquiAgainRoxo	
 		j fimJ
 	
-vaiQuadradoRoxo:	jal quadradoRoxo	
+vaiQuadradoRoxo:jal quadradoRoxo	
 		addi $4 $4 2524
 		jal pontoRoxo
-		addi $4 $4 -64
-		jal pontoRoxo
-		addi $4 $4 -2716
+		
+		beq $20 7 firstTimeRoxo
+		beq $20 15 firstTimeRoxo
+		beq $20 23 firstTimeRoxo
+		beq $20 31 firstTimeRoxo
+		beq $20 39 firstTimeRoxo
+		beq $20 47 firstTimeRoxo
+		beq $20 55 firstTimeRoxo
+
+return2:	addi $4 $4 -2524
 		j aquiOmiRoxo
 	
 	
@@ -361,6 +427,21 @@ primeiraCasaRoxo:	addi $4 $0 0
 pulaRoxo:	addi $4 $4 7168
 	addi $10 $0 8
 	j aquiAgainRoxo
+	
+	
+	
+	
+firstTimeRoxo:
+addi $4 $4 -64
+jal pontoRoxo
+addi $4 $4 64
+j return2
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -400,43 +481,102 @@ pontoRoxo:	lui $25 0x1001
 	addi $25 $25 508
 	sw $18 0($25)
 	addi $18 $0 0x00392975
-	jr $31
+naoPrecisa2:	jr $31
 
 
 	
+	
+	
 proximoPassoPiaoRoxo:li $2 5
 		syscall                ######Movendo a peça na matriz
+		
 		mul $7 $2 4
 		mul $7 $7 -1
 		add $24 $24 $7
 		lw $16 0($24)
+		beq $16 1 jogador2
 		#bgt $16 0 apagaQuemVaiMatar
 		sw $17 0($24)
-		addi $4 $4 256
+
 		jal apagaQuadradoRoxo
-		addi $4 $4 2460
+		addi $4 $4 2524
 		jal apagaPontoRoxo
-		addi $4 $4 64
-		jal apagaPontoRoxo
-		addi $4 $4 -1476
+	
+	
+		
+		
+		beq $20 7 naoSeiONome2
+		beq $20 15 naoSeiONome2
+		beq $20 23 naoSeiONome2
+		beq $20 31 naoSeiONome2
+		beq $20 39 naoSeiONome2
+		beq $20 47 naoSeiONome2
+		beq $20 55 naoSeiONome2
+		
+
+praCa2:
+		addi $4 $4 -2524
+		addi $4 $4 1048
 		jal apagaPiao2
 		addi $21 $20 1
-		beq $2 1 umaCasaRoxo
-		addi $21 $20 2
-		addi $4 $4 -128
-		jal piao2
-		j jogador2
-		
+		beq $2 1 umaCasa2
+		beq $20 7 duasCasas2
+		beq $20 15 duasCasas2
+		beq $20 23 duasCasas2
+		beq $20 31 duasCasas2
+		beq $20 39 duasCasas2
+		beq $20 47 duasCasas2
+		beq $20 55 duasCasas2
+		beq $2 2 umaCasa2
+	
 		
 		
 		
 
-umaCasaRoxo:addi $4 $4 -64
+umaCasa2:addi $4 $4 -64
 	jal piao2
 	j jogador2
 	
 
+duasCasas2:
+	addi $21 $20 -2
+	addi $4 $4 -128
+	jal piao2
+	j jogador2
+		
+		
+		
+		
+		
+	
+	
 
+	
+naoSeiONome2:
+
+addi $4 $4 -64
+jal apagaPontoRoxo
+addi $4 $4 64
+j praCa2
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -551,27 +691,12 @@ fimQuadradoRoxo:	addi $10 $0 16
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	
 apagaPonto:	lui $25 0x1001
 		add $25 $25 $4
+		lw $14 0($25)
+		beq $14 0x00f0f0f0 naoPrecisa
+		beq $14 0x00E3E3E3 naoPrecisa
 		lw $19 65536($25)
 ponto:	lui $25 0x1001
 	add $25 $25 $4
@@ -601,33 +726,48 @@ ponto:	lui $25 0x1001
 	addi $25 $25 508
 	sw $19 0($25)
 	addi $19 $0 0x00ffaa00
-	jr $31
+naoPrecisa:	jr $31
 
 
 	
 proximoPassoPiao:li $2 5
 		syscall
-		mul $7 $2 4
-		
+		mul $7 $2 4		
 		add $24 $24 $7
+
 		lw $16 0($24)
+		beq $16 7 jogador2
+
 		#bgt $16 0 apagaQuemVaiMatar
 		sw $17 0($24)
 		jal apagaQuadrado
 		addi $4 $4 2652
 		jal apagaPonto
-		addi $4 $4 64
-		jal apagaPonto
-		addi $4 $4 -2716
+		
+		beq $20 2 naoSeiONome
+		beq $20 10 naoSeiONome
+		beq $20 18 naoSeiONome
+		beq $20 26 naoSeiONome
+		beq $20 34 naoSeiONome
+		beq $20 42 naoSeiONome
+		beq $20 50 naoSeiONome
+		
+
+praCa:
+		addi $4 $4 -2652
 		addi $4 $4 1048
 		jal apagaPiao
 		addi $21 $20 1
 		beq $2 1 umaCasa
-		addi $21 $20 2
-		addi $4 $4 128
-		jal piao
-		j jogador2
-		
+		beq $20 2 duasCasas
+		beq $20 10 duasCasas
+		beq $20 18 duasCasas
+		beq $20 26 duasCasas
+		beq $20 34 duasCasas
+		beq $20 42 duasCasas
+		beq $20 50 duasCasas
+		beq $2 2 jogador2
+	
 		
 		
 		
@@ -637,7 +777,18 @@ umaCasa:addi $4 $4 64
 	j jogador2
 	
 
-
+duasCasas:
+	addi $21 $20 2
+	addi $4 $4 128
+	jal piao
+	j jogador2
+	
+	
+naoSeiONome:
+addi $4 $4 64
+jal apagaPonto	
+addi $4 $4 -64
+j praCa
 	
 	
 	
@@ -2626,3 +2777,1020 @@ rei2:	lui $25,0x1001
 	sw $18,0($25)
 	addi $18 $0 0x00392975
 	jr $31
+	
+	
+	
+	
+	
+	
+	
+apagaRed:lui $25 0x1001
+	add $25 $25 $4
+	addi $25 $25 4
+	lw $7 65536($25)
+red:	lui $25,0x1001
+	add $25,$25,$4
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 452
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $25, $25 4
+	sw $7,0($25)
+	addi $7 $0 0x00ff7700
+	
+	jr $31
+
+
+
+play1:	addi $4 $0 62120
+	jal apagaJogador1
+	jal jogador
+	j voltei
+
+play2:	addi $4 $0 62120
+	jal apagaJogador
+	jal jogador1
+	j voltei
+
+	
+apagaJogador1:lui $25 0x1001
+	add $25 $25 $4
+	lw $9 65536($25)
+jogador1:lui $25,0x1001
+	add $25,$25,$4
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -2540
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	addi $25, $25 24
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 500
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	
+	addi $25, $25 -1520
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -1536
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 1024
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -2536
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 508
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	
+	
+	addi $25, $25 -488
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	
+	addi $25, $25 24
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 508
+	sw $9,0($25)
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -2060
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25 $25 -2532
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $9 $0 0x00000000
+	
+	jr $31
+
+
+
+
+	
+apagaJogador:lui $25 0x1001
+	add $25 $25 $4
+	lw $9 65536($25)
+jogador:lui $25,0x1001
+	add $25,$25,$4
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -2540
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	addi $25, $25 24
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 500
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	
+	addi $25, $25 -1520
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -1536
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 1024
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -2536
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 508
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	
+	
+	addi $25, $25 -488
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -4
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	addi $25, $25 -512
+	sw $9,0($25)
+	
+	
+	addi $25, $25 24
+	sw $9,0($25)
+	addi $25, $25 4
+	sw $9,0($25)
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 508
+	sw $9,0($25)
+	addi $25, $25 516
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25, $25 -2060
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+	addi $25 $25 -2532
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	
+addi $25 $25 -2548
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $25, $25 512
+	sw $9,0($25)
+	addi $9 $0 0x000000
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	jr $31
+
